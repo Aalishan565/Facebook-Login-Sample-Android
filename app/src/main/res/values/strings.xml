@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FacebookLoginPOC</string>
+    <string name="facebook_ap_id">224305231324174</string>
+</resources>
