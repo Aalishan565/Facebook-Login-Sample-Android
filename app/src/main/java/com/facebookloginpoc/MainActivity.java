@@ -13,6 +13,8 @@ import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.Profile;
+import com.facebook.ProfileTracker;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTvStatus;
     private LoginButton mBtnFbLogin;
     CallbackManager callbackManager;
+    private ProfileTracker mProfileTracker;
 
 
     @Override
@@ -35,13 +38,29 @@ public class MainActivity extends AppCompatActivity {
         mTvStatus = (TextView) findViewById(R.id.tv_status);
         mBtnFbLogin = (LoginButton) findViewById(R.id.fb_login_btn);
         //mBtnFbLogin.setPublishPermissions("public_profile");
-        mBtnFbLogin.setReadPermissions(Arrays.asList("public_profile, email, user_birthday"));
+        mBtnFbLogin.setReadPermissions("public_profile");
         callbackManager = CallbackManager.Factory.create();
         mBtnFbLogin.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
 
             @Override
             public void onSuccess(LoginResult loginResult) {
-                mTvStatus.setText("login sucess" + loginResult.getAccessToken().getUserId() + "\n" + loginResult.getAccessToken().getToken());
+                if(Profile.getCurrentProfile() == null) {
+                    mProfileTracker = new ProfileTracker() {
+                        @Override
+                        protected void onCurrentProfileChanged(Profile profile, Profile profile2) {
+                            // profile2 is the new profile
+                            mTvStatus.setText(profile2.getFirstName());
+                            mProfileTracker.stopTracking();
+                        }
+                    };
+                    // no need to call startTracking() on mProfileTracker
+                    // because it is called by its constructor, internally.
+                }
+                else {
+                    Profile profile = Profile.getCurrentProfile();
+                    Log.v("facebook - profile", profile.getFirstName());
+                }
+                /*
                 GraphRequest request = GraphRequest.newMeRequest(loginResult.getAccessToken(),
                         new GraphRequest.GraphJSONObjectCallback() {
 
@@ -60,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                 request.executeAsync();
-
+*/
             }
 
             @Override
